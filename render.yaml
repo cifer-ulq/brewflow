@@ -20,6 +20,7 @@ services:
     name: brewflow-gateway
     env: docker
     dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
     plan: free
     envVars:
       - key: PORT
@@ -46,6 +47,7 @@ services:
     name: brewflow-auth
     env: docker
     dockerfilePath: ./services/auth-service/Dockerfile
+    dockerContext: ./services/auth-service
     plan: free
     envVars:
       - key: PORT
@@ -65,6 +67,7 @@ services:
     name: brewflow-inventory
     env: docker
     dockerfilePath: ./services/inventory-service/Dockerfile
+    dockerContext: ./services/inventory-service
     plan: free
     envVars:
       - key: PORT
@@ -84,6 +87,7 @@ services:
     name: brewflow-orders
     env: docker
     dockerfilePath: ./services/orders-service/Dockerfile
+    dockerContext: ./services/orders-service
     plan: free
     envVars:
       - key: PORT
@@ -107,6 +111,7 @@ services:
     name: brewflow-hr
     env: docker
     dockerfilePath: ./services/hr-service/Dockerfile
+    dockerContext: ./services/hr-service
     plan: free
     envVars:
       - key: PORT
@@ -126,6 +131,7 @@ services:
     name: brewflow-finance
     env: docker
     dockerfilePath: ./services/finance-service/Dockerfile
+    dockerContext: ./services/finance-service
     plan: free
     envVars:
       - key: PORT
