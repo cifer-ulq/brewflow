@@ -1,0 +1,141 @@
+services:
+
+  # ── Frontend (Static Site — always on, no sleep) ────────────────────────
+  - type: web
+    name: brewflow-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false   # Set to: https://brewflow-gateway.onrender.com/api/v1
+
+  # ── API Gateway ──────────────────────────────────────────────────────────
+  - type: web
+    name: brewflow-gateway
+    env: docker
+    dockerfilePath: ./api-gateway/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        sync: false   # Set to: https://brewflow-frontend.onrender.com
+      - key: AUTH_SERVICE_URL
+        sync: false   # Set to: https://brewflow-auth.onrender.com
+      - key: INVENTORY_SERVICE_URL
+        sync: false   # Set to: https://brewflow-inventory.onrender.com
+      - key: ORDERS_SERVICE_URL
+        sync: false   # Set to: https://brewflow-orders.onrender.com
+      - key: HR_SERVICE_URL
+        sync: false   # Set to: https://brewflow-hr.onrender.com
+      - key: FINANCE_SERVICE_URL
+        sync: false   # Set to: https://brewflow-finance.onrender.com
+
+  # ── Auth Service ─────────────────────────────────────────────────────────
+  - type: web
+    name: brewflow-auth
+    env: docker
+    dockerfilePath: ./services/auth-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 3001
+      - key: DATABASE_URL
+        sync: false   # Paste Neon connection string for auth_db
+      - key: JWT_SECRET
+        fromService:
+          name: brewflow-gateway
+          type: web
+          envVarKey: JWT_SECRET
+      - key: JWT_EXPIRES_IN
+        value: 7d
+
+  # ── Inventory Service ─────────────────────────────────────────────────────
+  - type: web
+    name: brewflow-inventory
+    env: docker
+    dockerfilePath: ./services/inventory-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 3002
+      - key: DATABASE_URL
+        sync: false   # Paste Neon connection string for inventory_db
+      - key: JWT_SECRET
+        fromService:
+          name: brewflow-gateway
+          type: web
+          envVarKey: JWT_SECRET
+      - key: AUTH_SERVICE_URL
+        sync: false   # Set to: https://brewflow-auth.onrender.com
+
+  # ── Orders Service ────────────────────────────────────────────────────────
+  - type: web
+    name: brewflow-orders
+    env: docker
+    dockerfilePath: ./services/orders-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 3003
+      - key: DATABASE_URL
+        sync: false   # Paste Neon connection string for orders_db
+      - key: JWT_SECRET
+        fromService:
+          name: brewflow-gateway
+          type: web
+          envVarKey: JWT_SECRET
+      - key: AUTH_SERVICE_URL
+        sync: false   # https://brewflow-auth.onrender.com
+      - key: INVENTORY_SERVICE_URL
+        sync: false   # https://brewflow-inventory.onrender.com
+      - key: FINANCE_SERVICE_URL
+        sync: false   # https://brewflow-finance.onrender.com
+
+  # ── HR Service ────────────────────────────────────────────────────────────
+  - type: web
+    name: brewflow-hr
+    env: docker
+    dockerfilePath: ./services/hr-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 3004
+      - key: DATABASE_URL
+        sync: false   # Paste Neon connection string for hr_db
+      - key: JWT_SECRET
+        fromService:
+          name: brewflow-gateway
+          type: web
+          envVarKey: JWT_SECRET
+      - key: AUTH_SERVICE_URL
+        sync: false   # https://brewflow-auth.onrender.com
+
+  # ── Finance Service ───────────────────────────────────────────────────────
+  - type: web
+    name: brewflow-finance
+    env: docker
+    dockerfilePath: ./services/finance-service/Dockerfile
+    plan: free
+    envVars:
+      - key: PORT
+        value: 3005
+      - key: DATABASE_URL
+        sync: false   # Paste Neon connection string for finance_db
+      - key: JWT_SECRET
+        fromService:
+          name: brewflow-gateway
+          type: web
+          envVarKey: JWT_SECRET
+      - key: AUTH_SERVICE_URL
+        sync: false   # https://brewflow-auth.onrender.com
